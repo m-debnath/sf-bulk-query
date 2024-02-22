@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import reduce
 import requests
 import time
 from xml.etree import ElementTree
@@ -136,9 +137,9 @@ class SalesforceJob:
                     batch['job_id'] = child.text
                 elif child.tag.endswith('numberRecordsProcessed'):
                     batch['number_records_processed'] = int(child.text)
-                    self.records_processed += batch['number_records_processed']
             self.batches.append(batch)
         self.batches = [batch for batch in self.batches if batch['state'] == constants.BATCH_STATUS_COMPLETED]
+        self.records_processed = reduce((lambda x, y: x + y), [batch['number_records_processed'] for batch in self.batches])
     
     def get_results(self):
         print(f'INFO: ----------------------------------------')
