@@ -21,6 +21,7 @@ class SalesforceJob:
         self.file_footer = ''
         self.file_output: str = constants.FILE_NAME_MAPPING[s_object]
         self.column_header_mapping = constants.COLUMN_HEADER_MAPPING[s_object]
+        self.additional_column_mapping = constants.ADDITIONAL_COLUMN_MAPPING[s_object]
         self.processed_at = None
         self.create_job_payload = f'''
 <?xml version="1.0" encoding="UTF-8"?>
@@ -168,7 +169,7 @@ class SalesforceJob:
                 if not header_generated:
                     self.write_file_header(rows[0])
                     header_generated = True
-                if constants.ADDITIONAL_COLUMN_MAPPING[self.s_object]:
+                if self.additional_column_mapping:
                     self.add_additional_columns(rows)
                 table_data = '\n'.join(rows[1:])
                 with open(self.file_output, '+at') as csvOutput:
@@ -194,8 +195,8 @@ class SalesforceJob:
     def add_additional_columns(self, rows):
         for index, row in enumerate(rows):
             if index > 0 and index < len(rows)-1:
-                for key in constants.ADDITIONAL_COLUMN_MAPPING[self.s_object]:
-                    row += f',"{constants.ADDITIONAL_COLUMN_MAPPING[self.s_object][key]}"'
+                for key in self.additional_column_mapping:
+                    row += f',"{self.additional_column_mapping[key]}"'
             rows[index] = row    
 
     def write_file_footer(self):
