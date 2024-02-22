@@ -47,7 +47,7 @@ class SalesforceJob:
             'Content-Type': 'application/xml; charset=UTF-8',
             'Sforce-Enable-PKChunking': str(self.pk_chunking)
         }}
-        response = requests.post(endpoint, data=self.create_job_payload, headers=headers)
+        response = self.post(endpoint, data=self.create_job_payload, headers=headers)
         root = ElementTree.fromstring(response.content)
         for child in root:
             if child.tag.endswith('id'):
@@ -63,7 +63,7 @@ class SalesforceJob:
         headers = {**self.auth_header, **{
             'Content-Type': 'text/csv; charset=UTF-8'
         }}
-        response = requests.post(endpoint, data=self.close_job_payload, headers=headers)
+        response = self.post(endpoint, data=self.close_job_payload, headers=headers)
         root = ElementTree.fromstring(response.content)
         job_status = ''
         for child in root:
@@ -80,7 +80,7 @@ class SalesforceJob:
             'Content-Type': 'text/csv; charset=UTF-8'
         }}
         response_job_id = ''
-        response = requests.post(endpoint, data=query, headers=headers)
+        response = self.post(endpoint, data=query, headers=headers)
         root = ElementTree.fromstring(response.content)
         for child in root:
             if child.tag.endswith('jobId'):
@@ -97,7 +97,7 @@ class SalesforceJob:
         number_records_processed = 0
         print(f'INFO: ----------------------------------------')
         while True:
-            response = requests.get(endpoint, headers=self.auth_header)
+            response = self.get(endpoint, headers=self.auth_header)
             root = ElementTree.fromstring(response.content)
             for child in root:
                 if child.tag.endswith('numberBatchesCompleted'):
@@ -124,7 +124,7 @@ class SalesforceJob:
 
     def get_complete_batches(self):
         endpoint = f'{self.instance_url}/services/async/60.0/job/{self.job_id}/batch'
-        response = requests.get(endpoint, headers=self.auth_header)
+        response = self.get(endpoint, headers=self.auth_header)
         root = ElementTree.fromstring(response.content)
         for batch_info in root:
             batch = {}
@@ -147,7 +147,7 @@ class SalesforceJob:
             batch['results'] = []
             batch_id = batch['id']
             endpoint = f'{self.instance_url}/services/async/60.0/job/{self.job_id}/batch/{batch_id}/result'
-            response = requests.get(endpoint, headers=self.auth_header)
+            response = self.get(endpoint, headers=self.auth_header)
             root = ElementTree.fromstring(response.content)
             for result in root:
                 batch['results'].append(result.text)
@@ -165,7 +165,7 @@ class SalesforceJob:
             number_records_processed = batch['number_records_processed']
             for result in batch['results']:
                 endpoint = f'{self.instance_url}/services/async/60.0/job/{self.job_id}/batch/{batch_id}/result/{result}'
-                response = requests.get(endpoint, headers=self.auth_header)
+                response = self.get(endpoint, headers=self.auth_header)
                 rows = response.text.split('\n')
                 if not header_generated:
                     self.write_file_header(rows[0])
@@ -203,3 +203,13 @@ class SalesforceJob:
     def write_file_footer(self):
         with open(self.file_output, '+at') as csvOutput:
             csvOutput.write(f'"FOOTER","{self.processed_at.strftime("%d-%m-%Y %H:%M:%S")}"')
+
+    def get(self, endpoint, headers):
+        response = requests.get(url=endpoint, headers=headers)
+        response.raise_for_status()
+        return response
+        
+    def post(self, endpoint, data, headers):
+        response = requests.post(url=endpoint, data=data, headers=headers)
+        response.raise_for_status()
+        return response
