@@ -1,0 +1,20 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File with Arguments",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "Asset",
+                "https://kpnb2b--devbira10.sandbox.my.salesforce.com",
+                "100D26000000J86r!AQcAQAkAzBqekpCIQRGoXflgkuBMLHCGDbU.pgOCzgqe6MmTIBz4gkcaJHDyRTiLI_8d1R1d4Ud2feY5wNQjciljG52RRLgC"
+            ]
+        }
+    ]
+}
