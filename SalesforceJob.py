@@ -138,7 +138,7 @@ class SalesforceJob:
                 elif child.tag.endswith('numberRecordsProcessed'):
                     batch['number_records_processed'] = int(child.text)
             self.batches.append(batch)
-        self.batches = [batch for batch in self.batches if batch['state'] == constants.BATCH_STATUS_COMPLETED]
+        self.batches = list(filter((lambda x: x['state'] == constants.BATCH_STATUS_COMPLETED), self.batches))
         self.records_processed = reduce((lambda x, y: x + y), [batch['number_records_processed'] for batch in self.batches])
     
     def get_results(self):
