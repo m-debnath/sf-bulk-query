@@ -13,7 +13,7 @@
             "args": [
                 "Asset",
                 "https://kpnb2b--devbira10.sandbox.my.salesforce.com",
-                "100D26000000J86r!AQcAQAkAzBqekpCIQRGoXflgkuBMLHCGDbU.pgOCzgqe6MmTIBz4gkcaJHDyRTiLI_8d1R1d4Ud2feY5wNQjciljG52RRLgC"
+                "session_id"
             ]
         }
     ]
