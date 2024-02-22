@@ -15,10 +15,6 @@ SELECT Account.KRN_ID__c, vlocity_cmt__ContractId__r.EnterpriseServiceId__c, vlo
 SELECT Asset__r.Account.KRN_ID__c, Asset__r.ExternalInterfaceId__c, Asset__r.vlocity_cmt__LineNumber__c, AssetEffectiveQuantity__c, Asset__r.Name, Asset__r.vlocity_cmt__ProvisioningStatus__c, Asset__r.Product2.ProductCode, Asset__r.Service_ID__c, Asset__r.PropositionType__c, ESMEE_Id__c, Asset__r.BillingStartDate__c, Asset__r.BillingEndDate__c FROM BIL_Identifier_Mapping__c
 '''
 }
-FILE_NAME_MAPPING = {
-    'Asset': f'ESMEE_RABBIT_DATA_<FILE_SUFFIX>_<JOB_ID>.csv',
-    'BIL_Identifier_Mapping__c': f'ESMEE_RABBIT_BILLINGDATA_<FILE_SUFFIX>_<JOB_ID>.csv'
-}
 COLUMN_HEADER_MAPPING = {
     'Asset': {
         '"Account.KRN_ID__c"': '"CUSTOMER ID"',
@@ -57,4 +53,8 @@ ADDITIONAL_COLUMN_MAPPING = {
         'PARTNER ID': '67490'
     },
     'BIL_Identifier_Mapping__c': {}
+}
+FILE_NAME_MAPPING = {
+    'Asset': f'ESMEE_RABBIT_DATA_<FILE_SUFFIX>_<JOB_ID>.csv',
+    'BIL_Identifier_Mapping__c': f'ESMEE_RABBIT_BILLINGDATA_<FILE_SUFFIX>_<JOB_ID>.csv'
 }
