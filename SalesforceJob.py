@@ -85,7 +85,7 @@ class SalesforceJob:
                 response_job_id = child.text
                 break
         assert(self.job_id == response_job_id)
-        print(f'INFO: Submitted query to job {self.job_id}.')
+        print(f'INFO: Submitted query to job.')
 
     def is_complete(self) -> bool:
         counter = 0
@@ -100,28 +100,23 @@ class SalesforceJob:
             for child in root:
                 if child.tag.endswith('numberBatchesCompleted'):
                     number_batches_completed = int(child.text)
-                    print(f'INFO: Batches completed: {number_batches_completed}')
                 elif child.tag.endswith('numberBatchesTotal'):
                     number_batches_total = int(child.text)
-                    print(f'INFO: Total batches: {number_batches_total}')
                 elif child.tag.endswith('numberRecordsProcessed'):
                     number_records_processed = int(child.text)
-                    print(f'INFO: Records processed: {number_records_processed}')
+            print(f'INFO: Querying records using batch {number_batches_completed} out of {number_batches_total}, progress {int(number_batches_completed*100/number_batches_total)}%.', end='\r')
             
             if number_batches_total == 0:
-                print(f'WARN: ----------------------------------------')
-                print(f'WARN: Zero batches are created for job {self.job_id}!')
+                print(f'\nWARN: Zero batches are created for job {self.job_id}!')
                 return False
             elif number_batches_total == number_batches_completed:
                 self.processed_at = datetime.now()
-                print(f'INFO: ----------------------------------------')
-                print(f'INFO: All batches are processed for job {self.job_id}.')
+                print(f'\nINFO: Total records queried {number_records_processed}.')
                 return True
             
             counter += 1
             if counter >= constants.MAX_RETRY_COUNT:
-                print(f'ERROR: ----------------------------------------')
-                print(f'ERROR: Maximum timeout reached while checking for Salesforce progress for job {self.job_id}!')
+                print(f'\nERROR: Maximum timeout reached while checking for Salesforce progress for job {self.job_id}!')
                 return False
             time.sleep(constants.API_POLL_FREQ_SECONDS)
 
@@ -143,15 +138,10 @@ class SalesforceJob:
                     self.records_processed += batch['number_records_processed']
             self.batches.append(batch)
         self.batches = [batch for batch in self.batches if batch['state'] == constants.BATCH_STATUS_COMPLETED]
-        print(f'INFO: ----------------------------------------')
-        print(f'INFO: Total number of complete batches: {len(self.batches)}')
-        print(f'INFO: Total number of processed records: {self.records_processed}')
-        return self
     
     def get_results(self):
         print(f'INFO: ----------------------------------------')
-        print(f'INFO: Fetching results...')
-        for batch in self.batches:
+        for index, batch in enumerate(self.batches):
             batch['results'] = []
             batch_id = batch['id']
             endpoint = f'{self.instance_url}/services/async/60.0/job/{self.job_id}/batch/{batch_id}/result'
@@ -159,9 +149,9 @@ class SalesforceJob:
             root = ElementTree.fromstring(response.content)
             for result in root:
                 batch['results'].append(result.text)
+            print(f'INFO: Fetching results for batch {index + 1} out of {len(self.batches)}, progress {int((index+1)*100/len(self.batches))}%.', end='\r')
             time.sleep(constants.API_POLL_FREQ_SECONDS)
-        print(f'INFO: Done.')
-        return self
+        print('')
     
     def generate_csv(self):
         header_generated = False
@@ -176,11 +166,8 @@ class SalesforceJob:
                 response = requests.get(endpoint, headers=self.auth_header)
                 rows = response.text.split('\n')
                 if not header_generated:
-                    self.file_header = f'"HEADER","ESMEE","{self.records_processed}","{self.s_object}"\n'
-                    with open(self.file_output, '+at') as csvOutput:
-                        csvOutput.write(self.file_header)
-                        csvOutput.write(self.generate_column_header(rows[0], self.column_header_mapping))
-                        header_generated = True
+                    self.write_file_header(rows[0])
+                    header_generated = True
                 if constants.ADDITIONAL_COLUMN_MAPPING[self.s_object]:
                     self.add_additional_columns(rows)
                 table_data = '\n'.join(rows[1:])
@@ -188,12 +175,15 @@ class SalesforceJob:
                     csvOutput.write(table_data)
                 time.sleep(constants.API_POLL_FREQ_SECONDS)
             self.records_written_to_csv += number_records_processed
-            print(f'INFO: Wrote {self.records_written_to_csv} records to {self.file_output}.')
-        with open(self.file_output, '+at') as csvOutput:
-            self.file_footer = f'"FOOTER","{self.processed_at.strftime("%d-%m-%Y %H:%M:%S")}"'
-            csvOutput.write(self.file_footer)
-        return self
+            print(f'INFO: Writing {self.records_written_to_csv} records of {self.records_processed}, progress {int(self.records_written_to_csv*100/self.records_processed)}%.', end='\r')
+        self.write_file_footer()
+        print(f'\nINFO: Finished writing all records to {self.file_output}.')
     
+    def write_file_header(self, column_header_row):
+        with open(self.file_output, '+at') as csvOutput:
+            csvOutput.write(f'"HEADER","ESMEE","{self.records_processed}","{self.s_object}"\n')
+            csvOutput.write(self.generate_column_header(column_header_row, self.column_header_mapping))
+
     def generate_column_header(self, original_header: str, column_mapping) -> str:
         for key in column_mapping:
             original_header = original_header.replace(key, column_mapping[key])
@@ -206,4 +196,8 @@ class SalesforceJob:
             if index > 0 and index < len(rows)-1:
                 for key in constants.ADDITIONAL_COLUMN_MAPPING[self.s_object]:
                     row += f',"{constants.ADDITIONAL_COLUMN_MAPPING[self.s_object][key]}"'
-            rows[index] = row
+            rows[index] = row    
+
+    def write_file_footer(self):
+        with open(self.file_output, '+at') as csvOutput:
+            csvOutput.write(f'"FOOTER","{self.processed_at.strftime("%d-%m-%Y %H:%M:%S")}"')
