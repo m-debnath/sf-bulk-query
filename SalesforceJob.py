@@ -87,7 +87,7 @@ class SalesforceJob:
                 response_job_id = child.text
                 break
         assert(self.job_id == response_job_id)
-        print(f'INFO: Submitted query to job.')
+        print(f'INFO: Submitted {self.s_object} query to job.')
 
     def is_complete(self) -> bool:
         counter = 0
