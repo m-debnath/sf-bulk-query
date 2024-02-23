@@ -179,7 +179,7 @@ class SalesforceJob:
     
     def write_file_header(self, column_header_row):
         with open(self.file_output, '+at') as csvOutput:
-            csvOutput.write(f'"HEADER","ESMEE","{self.records_processed}","{self.s_object}"\n')
+            csvOutput.write(constants.FILE_HEADER_TEMPLATE.replace('"<records_processed>"', f'"{self.records_processed}"').replace('"<s_object>"', f'"{self.s_object}"') + '\n')
             csvOutput.write(self.generate_column_header(column_header_row, self.column_header_mapping))
 
     def generate_column_header(self, original_header: str, column_mapping) -> str:
@@ -198,7 +198,8 @@ class SalesforceJob:
 
     def write_file_footer(self):
         with open(self.file_output, '+at') as csvOutput:
-            csvOutput.write(f'"FOOTER","{self.processed_at.strftime("%d-%m-%Y %H:%M:%S")}"')
+            time_format = constants.FILE_FOOTER_TEMPLATE.split(',')[1].replace('"', '')
+            csvOutput.write(constants.FILE_FOOTER_TEMPLATE.replace(time_format, self.processed_at.strftime(time_format)))
 
     def get(self, endpoint, headers):
         response = requests.get(url=endpoint, headers=headers)

@@ -46,6 +46,8 @@ ADDITIONAL_COLUMN_MAPPING = {
     },
     'BIL_Identifier_Mapping__c': {}
 }
+FILE_HEADER_TEMPLATE = '"HEADER","ESMEE","<records_processed>","<s_object>"'
+FILE_FOOTER_TEMPLATE = '"FOOTER","%d-%m-%Y %H:%M:%S"'
 FILE_NAME_MAPPING = {
     'Asset': f'ESMEE_RABBIT_DATA_<FILE_SUFFIX>_<JOB_ID>.csv',
     'BIL_Identifier_Mapping__c': f'ESMEE_RABBIT_BILLINGDATA_<FILE_SUFFIX>_<JOB_ID>.csv'
