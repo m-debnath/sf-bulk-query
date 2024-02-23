@@ -110,7 +110,7 @@ class SalesforceJob:
                 return False
             elif number_batches_total == number_batches_completed:
                 self.processed_at = datetime.now()
-                print(f'\nINFO: Total records queried {number_records_processed}.')
+                print(f'\nINFO: Total records queried {number_records_processed:,}.')
                 return True
             
             counter += 1
@@ -172,7 +172,7 @@ class SalesforceJob:
                     csvOutput.write(table_data)
                 time.sleep(constants.API_POLL_FREQ_SECONDS)
             self.records_written_to_csv += number_records_processed
-            print(f'INFO: Writing {self.records_written_to_csv} records of {self.records_processed}, progress {int(self.records_written_to_csv*100/self.records_processed)}%.', end='\r')
+            print(f'INFO: Writing {self.records_written_to_csv:,} records of {self.records_processed:,}, progress {int(self.records_written_to_csv*100/self.records_processed)}%.', end='\r')
         self.write_file_footer()
         print(f'\nINFO: Finished writing {self.file_output}.')
         print(constants.LOG_SEPARATOR)
