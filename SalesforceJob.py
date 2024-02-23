@@ -18,8 +18,6 @@ class SalesforceJob:
         self.batches = []
         self.records_processed = 0
         self.records_written_to_csv = 0
-        self.file_header = ''
-        self.file_footer = ''
         self.file_output: str = constants.FILE_NAME_MAPPING[s_object]
         self.column_header_mapping = constants.COLUMN_HEADER_MAPPING[s_object]
         self.additional_column_mapping = constants.ADDITIONAL_COLUMN_MAPPING[s_object]
