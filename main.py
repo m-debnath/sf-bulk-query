@@ -16,6 +16,7 @@ AUTH_HEADER = {
 }
 
 if __name__ == '__main__':
+    print(constants.APP_BANNER)
     with SalesforceJob(QUERY_SOBJECT, 'CSV', True, INSTANCE_URL, AUTH_HEADER) as job:
         job.submit_query(constants.JOB_TO_QUERY[QUERY_SOBJECT])
         if job.is_complete():
