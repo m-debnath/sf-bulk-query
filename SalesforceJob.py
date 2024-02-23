@@ -71,7 +71,7 @@ class SalesforceJob:
                 break
         assert(job_status == constants.JOB_STATUS_CLOSED)
         print(f'INFO: Salesforce job {self.job_id} is {job_status}.')
-        print(f'INFO: ===========================================================================')
+        print(constants.LOG_SEPARATOR)
 
     def submit_query(self, query):
         endpoint = f'{self.instance_url}/services/async/60.0/job/{self.job_id}/batch'
@@ -87,7 +87,7 @@ class SalesforceJob:
                 break
         assert(self.job_id == response_job_id)
         print(f'INFO: Submitted {self.s_object} query to job.')
-        print(f'INFO: ===========================================================================')
+        print(constants.LOG_SEPARATOR)
 
     def is_complete(self) -> bool:
         counter = 0
@@ -151,8 +151,8 @@ class SalesforceJob:
                 batch['results'].append(result.text)
             print(f'INFO: Fetching results for batch {index + 1} out of {len(self.batches)}, progress {int((index+1)*100/len(self.batches))}%.', end='\r')
             time.sleep(constants.API_POLL_FREQ_SECONDS)
-        print(f'\nINFO: ===========================================================================')
-    
+        print(f'\n{constants.LOG_SEPARATOR}')
+
     def generate_csv(self):
         header_generated = False
         self.file_output = self.file_output.replace('<FILE_SUFFIX>', self.processed_at.strftime('%Y%m%d%H%M%S'))
@@ -177,7 +177,7 @@ class SalesforceJob:
             print(f'INFO: Writing {self.records_written_to_csv} records of {self.records_processed}, progress {int(self.records_written_to_csv*100/self.records_processed)}%.', end='\r')
         self.write_file_footer()
         print(f'\nINFO: Finished writing {self.file_output}.')
-        print(f'INFO: ===========================================================================')
+        print(constants.LOG_SEPARATOR)
     
     def write_file_header(self, column_header_row):
         with open(self.file_output, '+at') as csvOutput:
